@@ -32,14 +32,14 @@ from scientific_gsplat_renderer.interactive import (
 )
 
 
-# DEFAULT_MODEL = Path(
-#     "/home/robiul/Particle_flow/HACC_project/output/"
-#     "illustris3_missing_tests/full_94m_0_5pct/simple_model.npz"
-# )
-
 DEFAULT_MODEL = Path(
-    "/home/robiul/Particle_flow/HACC_project/output/illustris3_parallel/full_94m_1pct_parallel/simple_model.npz"
+    "/home/robiul/Particle_flow/HACC_project/output/"
+    "illustris3_missing_tests/full_94m_0_5pct/simple_model.npz"
 )
+
+# DEFAULT_MODEL = Path(
+#     "/home/robiul/Particle_flow/HACC_project/output/illustris3_parallel/full_94m_1pct_parallel/simple_model.npz"
+# )
 
 
 # DEFAULT_MODEL = Path(
