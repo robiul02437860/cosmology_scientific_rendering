@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Generated / large scientific data
+outputs/
+ground_truth/
+data/
+models/
+
+# Large model/data files
+*.npz
+*.npy
+*.h5
+*.hdf5
+
+# Logs / temporary
+*.log
+*.tmp
+*.bak

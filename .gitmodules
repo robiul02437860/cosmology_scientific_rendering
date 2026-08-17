@@ -1,0 +1,4 @@
+[submodule "external/gsplat"]
+	path = external/gsplat
+	url = https://github.com/robiul02437860/gsplat.git
+	branch = scientific-renderer
