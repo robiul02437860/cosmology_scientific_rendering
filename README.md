@@ -1,33 +1,25 @@
-Cosmology Scientific Rendering
+# Cosmology Scientific Rendering
 
 GPU-accelerated scientific Gaussian splatting for large cosmological particle datasets.
 
-This repository contains a scientific Gaussian renderer built on a modified version of gsplat v1.5.3. It reconstructs projected particle density using additive Gaussian accumulation and scalar scientific attributes using conditional Gaussian statistics. It also includes an interactive Viser-based viewer with GPU-resident field caching, color transfer functions, and opacity transfer functions.
+This repository contains a scientific Gaussian renderer built on a modified version of **gsplat v1.5.3**. It reconstructs projected particle density using additive Gaussian accumulation and scalar scientific attributes using conditional Gaussian statistics. It also includes an interactive Viser-based viewer with GPU-resident field caching, color transfer functions, and opacity transfer functions.
 
-Features
+## Features
 
-Orthographic scientific Gaussian projection
+- Orthographic scientific Gaussian projection
+- Additive projected-density rendering
+- Conditional scalar-attribute reconstruction
+- Custom CUDA scientific rasterization built on gsplat
+- Tile-based GPU rendering
+- Interactive Viser viewer
+- Linear/logarithmic color transfer functions
+- Independent color and opacity transfer functions
+- GPU-resident cached display updates
+- Resolution/quality benchmarking utilities
 
-Additive projected-density rendering
+## Repository Layout
 
-Conditional scalar-attribute reconstruction
-
-Custom CUDA scientific rasterization built on gsplat
-
-Tile-based GPU rendering
-
-Interactive Viser viewer
-
-Linear/logarithmic color transfer functions
-
-Independent color and opacity transfer functions
-
-GPU-resident cached display updates
-
-Resolution/quality benchmarking utilities
-
-Repository Layout
-
+```text
 cosmology_scientific_rendering/
 ├── examples/
 ├── external/
@@ -40,57 +32,64 @@ cosmology_scientific_rendering/
 ├── .gitmodules
 ├── pyproject.toml
 └── README.md
+```
 
-The external/gsplat directory is a Git submodule pointing to the scientific-renderer branch of:
-
-https://github.com/robiul02437860/gsplat
+The `external/gsplat` directory is a Git submodule pointing to the `scientific-renderer` branch of the modified gsplat fork.
 
 The parent repository pins an exact gsplat commit, so users obtain the same CUDA implementation used by this renderer.
 
-Requirements
+## Requirements
 
 A CUDA-capable NVIDIA GPU is required for the GPU renderer.
 
 You need:
 
-Linux
-
-Python 3.10 or newer
-
-NVIDIA GPU and driver
-
-CUDA toolkit with nvcc
-
-CUDA-enabled PyTorch
-
-Git
+- Linux
+- Python 3.10 or newer
+- NVIDIA GPU and driver
+- CUDA toolkit with `nvcc`
+- CUDA-enabled PyTorch
+- Git
 
 The CUDA toolkit used to compile the modified gsplat extension should be compatible with the installed PyTorch CUDA build.
 
-Installation
+## Installation
 
-1. Clone the repository and submodule
+### 1. Clone the Repository and Submodule
 
+```bash
 git clone --recurse-submodules \
     https://github.com/robiul02437860/cosmology_scientific_rendering.git
 
 cd cosmology_scientific_rendering
+```
 
-If you already cloned the repository without submodules:
+If the repository was cloned without its submodules:
 
+```bash
 git submodule update --init --recursive
+```
 
-2. Create a virtual environment
+You can verify the pinned gsplat version with:
 
+```bash
+git submodule status
+```
+
+### 2. Create a Virtual Environment
+
+```bash
 python -m venv .venv
 source .venv/bin/activate
+```
 
-3. Install CUDA-enabled PyTorch
+### 3. Install CUDA-enabled PyTorch
 
-Install a PyTorch build appropriate for your NVIDIA driver and CUDA environment.
+Install a CUDA-enabled PyTorch build appropriate for your NVIDIA driver and CUDA environment.
 
 Verify the installation:
 
+```bash
 python - <<'PY'
 import torch
 
@@ -101,29 +100,52 @@ print("CUDA available:", torch.cuda.is_available())
 if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
 PY
+```
 
-CUDA available must be True.
+`CUDA available` should be `True`.
 
-Also verify the CUDA compiler:
+Also verify that the CUDA compiler is available:
 
+```bash
 which nvcc
 nvcc --version
+```
 
 If necessary, select the CUDA toolkit explicitly:
 
+```bash
 export CUDA_HOME=/usr/local/cuda
 export PATH="$CUDA_HOME/bin:$PATH"
+```
 
-4. Install modified gsplat and the renderer
+### 4. Install Modified gsplat and the Renderer
 
+Run:
+
+```bash
 bash scripts/install.sh
+```
 
-To control CUDA compilation parallelism:
+The installation script:
 
+1. Initializes the gsplat Git submodule.
+2. Checks CUDA-enabled PyTorch.
+3. Checks the CUDA compiler.
+4. Installs the required build tools.
+5. Compiles and installs the modified gsplat implementation.
+6. Installs `scientific-gsplat-renderer`.
+
+CUDA compilation parallelism can be controlled with:
+
+```bash
 MAX_JOBS=8 bash scripts/install.sh
+```
 
-Manual Installation
+## Manual Installation
 
+The installation can also be performed manually:
+
+```bash
 git submodule update --init --recursive
 
 python -m pip install --upgrade \
@@ -134,11 +156,15 @@ MAX_JOBS=8 python -m pip install \
     --no-build-isolation
 
 python -m pip install -e .
+```
 
-Important: Do not replace the submodule with a stock pip install gsplat. This project uses custom scientific CUDA rasterization kernels that are not part of upstream gsplat v1.5.3.
+> **Important:** Do not replace the submodule with a stock `pip install gsplat`. This project uses custom scientific CUDA rasterization kernels that are not part of upstream gsplat v1.5.3.
 
-Verify the Installation
+## Verify the Installation
 
+Run:
+
+```bash
 python - <<'PY'
 import torch
 import gsplat
@@ -159,130 +185,197 @@ if torch.cuda.is_available():
 
 print("Interactive renderer import: OK")
 PY
+```
 
-Run the Interactive Viewer
+## Running the Interactive Viewer
 
+Provide a saved scientific Gaussian model:
+
+```bash
 python examples/run_viser_scientific_viewer.py \
     --model /path/to/simple_model.npz
+```
 
-By default, the Viser server listens on:
+The viewer supports saved Gaussian models containing spatial Gaussian parameters and optional scientific scalar-attribute statistics.
 
-http://127.0.0.1:8080
+## Remote Visualization
 
-When running on a remote machine, create an SSH tunnel from your local computer:
+When the renderer runs on a remote machine, the Viser server can be accessed from a local computer using SSH port forwarding.
 
+On the **remote machine**, start the viewer:
+
+```bash
+python examples/run_viser_scientific_viewer.py \
+    --model /path/to/simple_model.npz
+```
+
+On the **local computer**, create the SSH tunnel:
+
+```bash
 ssh -N -L 8080:127.0.0.1:8080 USER@REMOTE_HOST
+```
 
-Then open:
+Then open the following address in the local web browser:
 
+```text
 http://localhost:8080
+```
 
-Interactive Controls
+## Interactive Controls
 
 The viewer supports:
 
-Density or scalar-attribute display
+- Density or scalar-attribute visualization
+- Linear/logarithmic color mapping
+- Independent linear/logarithmic opacity mapping
+- Color range control
+- Opacity range control
+- Automatic percentile-based ranges
+- Colormap selection
+- Black/white background
+- Interactive camera movement
+- Gaussian smoothing controls
+- Cached transfer-function updates
+- Screenshot export
 
-Linear/logarithmic color mapping
+Camera or Gaussian-kernel changes require a new scientific render.
 
-Independent linear/logarithmic opacity mapping
+Color, opacity, and transfer-function changes can reuse the cached GPU scientific fields, avoiding unnecessary rerasterization.
 
-Color and opacity ranges
+## Scientific Rendering Formulation
 
-Automatic percentile-based ranges
+### Projected Density
 
-Colormap selection
+For projected density, the renderer performs additive Gaussian accumulation:
 
-Black/white background
+$$
+D(\mathbf{u}) =
+\sum_{k=1}^{K} M_k G_k(\mathbf{u}),
+$$
 
-Camera interaction
+where:
 
-Gaussian smoothing controls
+- $\mathbf{u}$ is the image-space position,
+- $M_k$ is the mass represented by Gaussian $k$,
+- $G_k(\mathbf{u})$ is the projected Gaussian footprint.
 
-Cached transfer-function updates
+Unlike conventional 3D Gaussian Splatting for novel-view synthesis, this scientific density representation does not use front-to-back alpha compositing. Contributions from overlapping Gaussians are accumulated additively.
 
-Screenshot export
+### Conditional Scalar Attribute
 
-Camera or Gaussian-kernel changes trigger a new scientific render. Color, opacity, and transfer-function changes reuse cached GPU scientific fields.
+For a scalar scientific attribute, the renderer reconstructs the local attribute using conditional Gaussian statistics.
 
-Scientific Rendering Formulation
+The resulting projected attribute field has the form:
 
-Projected density is reconstructed additively:
-
-[
-D(\mathbf{u}) = \sum_k M_k G_k(\mathbf{u}).
-]
-
-A scalar attribute is reconstructed conditionally:
-
-[
+$$
 A(\mathbf{u}) =
-\frac{\sum_k M_k G_k(\mathbf{u}) m_k(\mathbf{u})}
-{\sum_k M_k G_k(\mathbf{u})}.
-]
+\frac{
+\sum_{k=1}^{K}
+M_k G_k(\mathbf{u})m_k(\mathbf{u})
+}{
+\sum_{k=1}^{K}
+M_k G_k(\mathbf{u})
+},
+$$
 
-Data and Models
+where $m_k(\mathbf{u})$ is the conditional scalar estimate associated with Gaussian $k$ at image-space position $\mathbf{u}$.
 
-Large simulation data, ground-truth images, outputs, and saved .npz models are intentionally not stored in this repository.
+This separates the scientific field reconstruction from the subsequent visualization transfer function.
 
-The renderer has been developed and evaluated with cosmological particle data including:
+## Data and Models
 
-Illustris-3 dark matter particles
+Large simulation datasets, ground-truth images, rendered outputs, and saved `.npz` Gaussian models are intentionally not stored in this repository.
 
-HACC m000 particles
+The renderer has been developed and evaluated using cosmological particle datasets including:
 
-Provide a compatible saved Gaussian model using --model.
+- Illustris-3 dark matter particles
+- HACC `m000` particles
 
-Benchmarks
+A compatible Gaussian model can be supplied using:
 
-Install benchmark dependencies:
+```bash
+--model /path/to/simple_model.npz
+```
 
+## Benchmarks
+
+Benchmarking utilities are available under `examples/`.
+
+Install the benchmark dependencies:
+
+```bash
 python -m pip install -e ".[benchmark]"
+```
 
-Then run, for example:
+For example:
 
+```bash
 python examples/benchmark_resolution_quality.py
+```
 
-Tests
+Additional scripts are available for GPU projection, density rendering, model upload, and conditional rendering benchmarks.
+
+## Tests
 
 Install development dependencies:
 
+```bash
 python -m pip install -e ".[dev]"
+```
 
-Run:
+Run the test suite:
 
+```bash
 pytest
+```
 
-Modified gsplat
+## Modified gsplat
 
-Upstream gsplat:
+This project builds on a modified fork of gsplat.
+
+**Upstream project:**
 
 https://github.com/nerfstudio-project/gsplat
 
-Scientific fork:
+**Scientific fork:**
 
 https://github.com/robiul02437860/gsplat
 
-The scientific fork adds custom additive-density and conditional-attribute CUDA rasterization. The parent repository records the exact compatible gsplat commit using a Git submodule:
+The scientific fork adds custom CUDA functionality for scientific Gaussian rasterization, including additive density and conditional scalar-attribute rendering.
 
+The main repository records the exact compatible gsplat commit through the Git submodule:
+
+```bash
 git submodule status
+```
 
-Updating the gsplat Submodule
+## Updating the gsplat Submodule
 
-Make gsplat changes inside external/gsplat, commit and push them there first, then commit the updated submodule pointer in the parent repository:
+Changes to the custom CUDA implementation should first be committed inside the gsplat repository:
 
+```bash
 cd external/gsplat
 
+git status
 git add ...
 git commit -m "Describe gsplat change"
 git push
+```
 
+Then return to the parent repository and update its submodule pointer:
+
+```bash
 cd ../..
 
 git add external/gsplat
 git commit -m "Update scientific gsplat submodule"
 git push
+```
 
-License
+This ensures that the main repository always points to a specific compatible version of the modified gsplat implementation.
 
-Add a project license before the public research release. The gsplat submodule retains its upstream license and copyright notices.
+## License
+
+A project license should be added before the public research release.
+
+The gsplat submodule retains its own upstream license and copyright notices.
